@@ -12,7 +12,6 @@ class Transactions(context: Context) {
 
     private val dbHelper = SQLiteConnection(context)
 
-    // 1. Obtener la tasa de cambio
     fun getRate(fromCode: String): Double {
         val db = dbHelper.readableDatabase
         val cursor = db.rawQuery(
@@ -28,7 +27,6 @@ class Transactions(context: Context) {
         return exchangeRate
     }
 
-    // 2. Insertar una conversión
     fun insertConversion(from: String, to: String, amount: Double, result: Double): Long {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
@@ -39,7 +37,7 @@ class Transactions(context: Context) {
             put(Companion.date, SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()))
         }
         val id = db.insert(Companion.tbConversions, null, values)
-        db.close() // Es buena práctica cerrar la conexión
+        db.close()
         return id
     }
 

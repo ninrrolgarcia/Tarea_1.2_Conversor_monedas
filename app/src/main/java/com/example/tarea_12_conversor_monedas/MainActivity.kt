@@ -43,10 +43,8 @@ fun PantallaPrincipal() {
     val context = LocalContext.current
     val db = remember { Transactions(context) }
 
-    // Estados para la UI
     var montoInput by remember { mutableStateOf("") }
     var resultadoTexto by remember { mutableStateOf("0.00") }
-    // Estado para la lista (se actualiza al convertir)
     var historial by remember { mutableStateOf(db.getAllConversions()) }
 
     var monedaOrigen by remember { mutableStateOf("HNL") }
@@ -103,7 +101,6 @@ fun PantallaPrincipal() {
                     val calculo = monto * factor
                     resultadoTexto = String.format("%.2f", calculo)
 
-                    // Guardamos la conversión real en la DB
                     db.insertConversion(monedaOrigen, "USD", monto, calculo)
                     historial = db.getAllConversions()
                 }
@@ -135,9 +132,7 @@ fun PantallaPrincipal() {
         LazyColumn {
             items(historial.reversed()) { registro ->
                 ItemHistorial(registro) {
-                    // Acción al tocar la estrella
                     db.toggleFavorite(registro.id, registro.isFavorite)
-                    // Actualizamos la lista para que cambie el color de la estrella
                     historial = db.getAllConversions()
                 }
             }
@@ -161,7 +156,6 @@ fun ItemHistorial(conversion: Conversion, onFavoriteClick: () -> Unit) {
                 Text(text = conversion.date, style = MaterialTheme.typography.labelSmall)
             }
 
-            // Botón de Favorito (Estrella)
             IconButton(onClick = onFavoriteClick) {
                 Icon(
                     imageVector = if (conversion.isFavorite == 1) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
