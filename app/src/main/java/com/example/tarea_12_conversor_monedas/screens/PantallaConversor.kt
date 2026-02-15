@@ -2,6 +2,8 @@ package com.example.tarea_12_conversor_monedas.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,10 +19,14 @@ fun PantallaConversor(navController: NavController) {
     val context = LocalContext.current
     val db = remember { Transactions(context) }
 
-    // Estados para la interfaz
+    var tasas by remember { mutableStateOf(db.getAllRates()) }
+    val listaMonedas = if (tasas.isEmpty()) {
+        listOf("HNL", "CRC", "NIC", "GTQ", "BZD")
+    } else {
+        tasas.map { it.fromCode }
+    }
     var montoInput by remember { mutableStateOf("") }
     var monedaOrigen by remember { mutableStateOf("HNL") }
-    val listaMonedas = listOf("HNL", "CRC", "NIC", "GTQ", "BZD")
 
     Column(
         modifier = Modifier
@@ -31,7 +37,6 @@ fun PantallaConversor(navController: NavController) {
     ) {
         Text(text = "Conversor de Moneda", style = MaterialTheme.typography.headlineMedium)
 
-        // --- 1. SELECCIÓN DE MONEDA ---
         Text("Seleccione Moneda de Origen:", style = MaterialTheme.typography.titleSmall)
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -47,7 +52,6 @@ fun PantallaConversor(navController: NavController) {
             }
         }
 
-        // --- 2. INGRESO DE MONTO ---
         OutlinedTextField(
             value = montoInput,
             onValueChange = { montoInput = it },
@@ -59,14 +63,13 @@ fun PantallaConversor(navController: NavController) {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // --- 3. BOTÓN CONVERTIR (Y NAVEGAR) ---
+
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
                 val monto = montoInput.toDoubleOrNull() ?: 0.0
                 if (monto > 0) {
                     val tasa = db.getRate(monedaOrigen)
-                    // Tasas de respaldo si la DB está vacía
                     val factor = if (tasa > 0) tasa else when(monedaOrigen) {
                         "HNL" -> 0.038
                         "CRC" -> 0.0021
@@ -77,10 +80,8 @@ fun PantallaConversor(navController: NavController) {
                     }
                     val calculo = String.format("%.2f", monto * factor)
 
-                    // Guardamos en la base de datos
                     db.insertConversion(monedaOrigen, "USD", monto, monto * factor)
 
-                    // NAVEGAMOS a la pantalla de resultado pasando los valores
                     navController.navigate("resultado/$monto/$monedaOrigen/$calculo")
                 }
             }
@@ -88,7 +89,13 @@ fun PantallaConversor(navController: NavController) {
             Text("Realizar Conversión")
         }
 
-        // --- 4. BOTÓN HISTORIAL ---
+        OutlinedButton(
+            onClick = { navController.navigate("configuracion") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Configurar Tasa", style = MaterialTheme.typography.labelSmall)
+        }
+
         OutlinedButton(
             onClick = { navController.navigate("historial") },
             modifier = Modifier.fillMaxWidth()

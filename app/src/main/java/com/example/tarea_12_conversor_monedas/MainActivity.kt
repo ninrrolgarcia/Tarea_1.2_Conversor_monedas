@@ -14,25 +14,22 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Tarea_12_Conversor_monedasTheme {
-                // 1. Creamos el controlador de navegación
                 val navController = rememberNavController()
 
-                // 2. Definimos el NavHost (El mapa de rutas)
                 NavHost(
                     navController = navController,
-                    startDestination = "conversor" // Pantalla de inicio
+                    startDestination = "conversor"
                 ) {
-                    // Ruta al Conversor
                     composable("conversor") {
                         PantallaConversor(navController)
                     }
 
-                    // Ruta al Historial
                     composable("historial") {
                         PantallaHistorial(navController)
                     }
+                    composable("configuracion")
+                    { PantallaConfiguracion(navController) }
 
-                    // Ruta al Resultado (Recibe parámetros)
                     composable("resultado/{monto}/{moneda}/{calculo}") { backStackEntry ->
                         val monto = backStackEntry.arguments?.getString("monto") ?: "0"
                         val moneda = backStackEntry.arguments?.getString("moneda") ?: ""

@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import com.example.tarea_12_conversor_monedas.Models.Conversion
+import com.example.tarea_12_conversor_monedas.Models.Rate
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -25,6 +26,30 @@ class Transactions(context: Context) {
         }
         cursor.close()
         return exchangeRate
+    }
+
+    fun insertOrUpdateRate(from: String, to: String, rateValue: Double) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(Companion.from_code, from)
+            put(Companion.to_code, to)
+            put(Companion.rate, rateValue)
+        }
+        db.insertWithOnConflict(Companion.tbRates, null, values, SQLiteDatabase.CONFLICT_REPLACE)
+        db.close()
+    }
+
+    fun getAllRates(): List<Rate> {
+        val list = mutableListOf<Rate>()
+        val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM ${Companion.tbRates}", null)
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(Rate(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getDouble(3)))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
     }
 
     fun insertConversion(from: String, to: String, amount: Double, result: Double): Long {
@@ -74,6 +99,7 @@ class Transactions(context: Context) {
         db.update(Companion.tbConversions, values, "${Companion.id} = ?", arrayOf(id.toString()))
         db.close()
     }
+
 
     companion object {
         const val dbname = "DBPM01"
